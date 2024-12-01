@@ -16,7 +16,17 @@ fn main() {
     left.sort();
     right.sort();
 
-    let total = left.iter().zip(&right).map(|(left, right)| left.abs_diff(*right)).sum::<usize>();
+    let total1 = left.iter().zip(&right).map(|(left, right)| left.abs_diff(*right)).sum::<usize>();
 
-    println!("Total: {total}");
+    println!("Total (part 1): {total1}");
+
+    let count_in_right = |n: usize| {
+        let a = right.partition_point(|x| *x < n);
+        let b = right.partition_point(|x| *x <= n);
+
+        b - a
+    };
+
+    let total2 = left.iter().map(|n| *n * count_in_right(*n)).sum::<usize>();
+    println!("Total (part 2): {total2}");
 }
