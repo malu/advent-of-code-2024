@@ -6,17 +6,26 @@ fn main() {
         .map(|line| line.split_whitespace())
         .map(|mut line| {
             (
-                line.next().expect("first entry").parse::<usize>().expect("integer"),
-                line.next().expect("second entry").parse::<usize>().expect("integer"),
+                line.next()
+                    .expect("first entry")
+                    .parse::<usize>()
+                    .expect("integer"),
+                line.next()
+                    .expect("second entry")
+                    .parse::<usize>()
+                    .expect("integer"),
             )
         })
-        .collect()
-    ;
+        .collect();
 
     left.sort();
     right.sort();
 
-    let total1 = left.iter().zip(&right).map(|(left, right)| left.abs_diff(*right)).sum::<usize>();
+    let total1 = left
+        .iter()
+        .zip(&right)
+        .map(|(left, right)| left.abs_diff(*right))
+        .sum::<usize>();
 
     println!("Total (part 1): {total1}");
 
