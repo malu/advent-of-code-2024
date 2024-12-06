@@ -2,9 +2,21 @@ use std::collections::HashSet;
 
 fn main() {
     let input = std::env::args().nth(1).expect("filename argument");
-    let contents = std::fs::read_to_string(input).expect("file exists").lines().map(|line| line.chars().collect::<Vec<_>>()).collect::<Vec<_>>();
+    let contents = std::fs::read_to_string(input)
+        .expect("file exists")
+        .lines()
+        .map(|line| line.chars().collect::<Vec<_>>())
+        .collect::<Vec<_>>();
 
-    let start_pos = contents.iter().enumerate().find_map(|(y, row)| row.iter().enumerate().find_map(|(x, col)| (*col == '^').then_some((x as isize, y as isize)))).expect("starting position");
+    let start_pos = contents
+        .iter()
+        .enumerate()
+        .find_map(|(y, row)| {
+            row.iter()
+                .enumerate()
+                .find_map(|(x, col)| (*col == '^').then_some((x as isize, y as isize)))
+        })
+        .expect("starting position");
 
     let visited = visited(&contents, start_pos);
     println!("Total (part 1): {}", visited.len());
@@ -35,7 +47,11 @@ fn visited(field: &[Vec<char>], mut pos: (isize, isize)) -> HashSet<(isize, isiz
         let next_x = pos.0 + dir.0;
         let next_y = pos.1 + dir.1;
 
-        if next_x < 0 || next_x as usize >= field[0].len() || next_y < 0 || next_y as usize >= field.len() {
+        if next_x < 0
+            || next_x as usize >= field[0].len()
+            || next_y < 0
+            || next_y as usize >= field.len()
+        {
             break;
         }
 
@@ -64,7 +80,11 @@ fn is_looping(field: &[Vec<char>], mut pos: (isize, isize)) -> bool {
             return true;
         }
 
-        if next_x < 0 || next_x as usize >= field[0].len() || next_y < 0 || next_y as usize >= field.len() {
+        if next_x < 0
+            || next_x as usize >= field[0].len()
+            || next_y < 0
+            || next_y as usize >= field.len()
+        {
             break;
         }
 

@@ -5,14 +5,21 @@ fn main() {
     let contents = std::fs::read_to_string(input).expect("file exists");
     let mut lines = contents.lines();
 
-    let pairs: HashSet<_> = lines.by_ref().take_while(|line| !line.is_empty()).filter_map(|line| line.split_once('|')).collect();
+    let pairs: HashSet<_> = lines
+        .by_ref()
+        .take_while(|line| !line.is_empty())
+        .filter_map(|line| line.split_once('|'))
+        .collect();
     let updates: Vec<Vec<_>> = lines.map(|line| line.split(',').collect()).collect();
 
     let mut incorrect = Vec::new();
     let mut total1 = 0;
     'updates: for update in updates {
         for (i, page) in update.iter().enumerate() {
-            if update[i..].iter().any(|later_page| pairs.contains(&(later_page, page))) {
+            if update[i..]
+                .iter()
+                .any(|later_page| pairs.contains(&(later_page, page)))
+            {
                 incorrect.push(update);
                 continue 'updates;
             }
