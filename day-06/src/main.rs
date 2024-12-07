@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 fn main() {
     let input = std::env::args().nth(1).expect("filename argument");
@@ -39,8 +39,8 @@ fn main() {
     println!("Total (part 2): {total2}");
 }
 
-fn visited(field: &[Vec<u8>], mut pos: (isize, isize)) -> HashSet<(isize, isize)> {
-    let mut visited = HashSet::new();
+fn visited(field: &[Vec<u8>], mut pos: (isize, isize)) -> BTreeSet<(isize, isize)> {
+    let mut visited = BTreeSet::new();
     let mut dir = (0, -1);
 
     visited.insert(pos);
@@ -73,7 +73,7 @@ fn is_looping(field: &[Vec<u8>], pos: (isize, isize)) -> bool {
     map.loops_from(pos.0 as usize, pos.1 as usize, Direction::U)
 }
 
-#[derive(Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(Copy, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 enum Direction {
     U,
     R,
@@ -206,7 +206,7 @@ impl Map {
     }
 
     fn loops_from(&self, mut x: usize, mut y: usize, mut direction: Direction) -> bool {
-        let mut visited = HashSet::new();
+        let mut visited = BTreeSet::new();
 
         loop {
             if visited.contains(&(x, y, direction)) {
