@@ -4,3 +4,6 @@ resolver = "2"
 
 [workspace.dependencies]
 regex = "1.11.1"
+
+[profile.release]
+debug = true
