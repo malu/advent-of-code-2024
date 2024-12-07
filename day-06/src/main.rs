@@ -206,14 +206,22 @@ impl Map {
     }
 
     fn loops_from(&self, mut x: usize, mut y: usize, mut direction: Direction) -> bool {
-        let mut visited = BTreeSet::new();
+        let mut visited = vec![0u8; self.width * self.height];
+        let dir_to_bit = |dir: Direction| {
+            match dir {
+                Direction::U => 1 << 0,
+                Direction::R => 1 << 1,
+                Direction::D => 1 << 2,
+                Direction::L => 1 << 3,
+            }
+        };
 
         loop {
-            if visited.contains(&(x, y, direction)) {
+            if visited[self.at(x, y)] & dir_to_bit(direction) > 0 {
                 return true;
             }
+            visited[self.at(x, y)] |= dir_to_bit(direction);
 
-            visited.insert((x, y, direction));
             match direction {
                 Direction::U => {
                     if self.data[self.at(x, y)].u as usize > y {
