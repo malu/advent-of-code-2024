@@ -21,15 +21,16 @@ fn main() {
     let visited = visited(&contents, start_pos);
     println!("Total (part 1): {}", visited.len());
 
+    let base_map = Map::from_input(&contents);
     let mut total2 = 0;
     for pos in visited {
         if pos == start_pos {
             continue;
         }
 
-        let mut contents = contents.clone();
-        contents[pos.1 as usize][pos.0 as usize] = b'#';
-        let looping = is_looping(&contents, start_pos);
+        let mut map = base_map.clone();
+        map.insert_obstacle(pos.0 as usize, pos.1 as usize);
+        let looping = map.loops_from(start_pos.0 as usize, start_pos.1 as usize, Direction::U);
         if looping {
             total2 += 1;
         }
@@ -88,6 +89,7 @@ struct Spans {
     l: u16,
 }
 
+#[derive(Clone, Default, PartialEq, Eq)]
 struct Map {
     width: usize,
     height: usize,
@@ -163,6 +165,40 @@ impl Map {
         }
 
         res
+    }
+
+    fn insert_obstacle(&mut self, ox: usize, oy: usize) {
+        for x in (0..=(ox-1)).rev() {
+            if self.data[self.at(x, oy)].r == 0 {
+                break;
+            }
+
+            self.data[self.at(x, oy)].r = (ox - x - 1) as u16;
+        }
+
+        for x in (ox+1)..self.width {
+            if self.data[self.at(x, oy)].l == 0 {
+                break;
+            }
+
+            self.data[self.at(x, oy)].l = (x - ox - 1) as u16;
+        }
+
+        for y in (0..=(oy-1)).rev() {
+            if self.data[self.at(ox, y)].d == 0 {
+                break;
+            }
+
+            self.data[self.at(ox, y)].d = (oy - y - 1) as u16;
+        }
+
+        for y in (oy+1)..self.height {
+            if self.data[self.at(ox, y)].u == 0 {
+                break;
+            }
+
+            self.data[self.at(ox, y)].u = (y - oy - 1) as u16;
+        }
     }
 
     fn at(&self, x: usize, y: usize) -> usize {
