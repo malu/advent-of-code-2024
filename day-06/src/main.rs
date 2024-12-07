@@ -68,11 +68,6 @@ fn visited(field: &[Vec<u8>], mut pos: (isize, isize)) -> BTreeSet<(isize, isize
     visited
 }
 
-fn is_looping(field: &[Vec<u8>], pos: (isize, isize)) -> bool {
-    let map = Map::from_input(field);
-    map.loops_from(pos.0 as usize, pos.1 as usize, Direction::U)
-}
-
 #[derive(Copy, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 enum Direction {
     U,
