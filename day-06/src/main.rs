@@ -5,7 +5,7 @@ fn main() {
     let contents = std::fs::read_to_string(input)
         .expect("file exists")
         .lines()
-        .map(|line| line.bytes().into_iter().collect::<Vec<_>>())
+        .map(|line| line.bytes().collect::<Vec<_>>())
         .collect::<Vec<_>>();
 
     let start_pos = contents
@@ -28,9 +28,8 @@ fn main() {
             continue;
         }
 
-        let mut map = base_map.clone();
-        map.insert_obstacle(pos.0 as usize, pos.1 as usize);
-        let looping = map.loops_from(start_pos.0 as usize, start_pos.1 as usize, Direction::U);
+        let overlay = base_map.overlay_obstacle(pos.0 as usize, pos.1 as usize);
+        let looping = overlay.loops_from(start_pos.0 as usize, start_pos.1 as usize, Direction::U);
         if looping {
             total2 += 1;
         }
@@ -162,88 +161,134 @@ impl Map {
         res
     }
 
-    fn insert_obstacle(&mut self, ox: usize, oy: usize) {
-        for x in (0..=(ox-1)).rev() {
-            if self.data[self.at(x, oy)].r == 0 {
-                break;
-            }
-
-            self.data[self.at(x, oy)].r = (ox - x - 1) as u16;
-        }
-
-        for x in (ox+1)..self.width {
-            if self.data[self.at(x, oy)].l == 0 {
-                break;
-            }
-
-            self.data[self.at(x, oy)].l = (x - ox - 1) as u16;
-        }
-
-        for y in (0..=(oy-1)).rev() {
-            if self.data[self.at(ox, y)].d == 0 {
-                break;
-            }
-
-            self.data[self.at(ox, y)].d = (oy - y - 1) as u16;
-        }
-
-        for y in (oy+1)..self.height {
-            if self.data[self.at(ox, y)].u == 0 {
-                break;
-            }
-
-            self.data[self.at(ox, y)].u = (y - oy - 1) as u16;
+    fn overlay_obstacle(&self, ox: usize, oy: usize) -> Overlay {
+        Overlay {
+            map: self,
+            obstacle_x: ox,
+            obstacle_y: oy,
         }
     }
 
+    #[inline]
     fn at(&self, x: usize, y: usize) -> usize {
         y * self.width + x
     }
 
+    #[inline]
+    fn u(&self, x: usize, y: usize) -> u16 {
+        self.data[self.at(x, y)].u
+    }
+
+    #[inline]
+    fn r(&self, x: usize, y: usize) -> u16 {
+        self.data[self.at(x, y)].r
+    }
+
+    #[inline]
+    fn d(&self, x: usize, y: usize) -> u16 {
+        self.data[self.at(x, y)].d
+    }
+
+    #[inline]
+    fn l(&self, x: usize, y: usize) -> u16 {
+        self.data[self.at(x, y)].l
+    }
+}
+
+#[derive(Clone)]
+struct Overlay<'a> {
+    map: &'a Map,
+    obstacle_x: usize,
+    obstacle_y: usize,
+}
+
+impl Overlay<'_> {
+    #[inline]
+    fn u(&self, x: usize, y: usize) -> usize {
+        let u = self.map.u(x, y) as usize;
+        if x == self.obstacle_x && y > self.obstacle_y && y - self.obstacle_y <= u {
+            y - self.obstacle_y - 1
+        } else {
+            u
+        }
+    }
+
+    #[inline]
+    fn r(&self, x: usize, y: usize) -> usize {
+        let r = self.map.r(x, y) as usize;
+        if y == self.obstacle_y && x < self.obstacle_x && self.obstacle_x - x <= r {
+            self.obstacle_x - x - 1
+        } else {
+            r
+        }
+    }
+
+    #[inline]
+    fn d(&self, x: usize, y: usize) -> usize {
+        let d = self.map.d(x, y) as usize;
+        if x == self.obstacle_x && y < self.obstacle_y && self.obstacle_y - y <= d {
+            self.obstacle_y - y - 1
+        } else {
+            d
+        }
+    }
+
+    #[inline]
+    fn l(&self, x: usize, y: usize) -> usize {
+        let l = self.map.l(x, y) as usize;
+        if y == self.obstacle_y && x > self.obstacle_x && x - self.obstacle_x <= l {
+            x - self.obstacle_x - 1
+        } else {
+            l
+        }
+    }
+
     fn loops_from(&self, mut x: usize, mut y: usize, mut direction: Direction) -> bool {
-        let mut visited = vec![0u8; self.width * self.height];
-        let dir_to_bit = |dir: Direction| {
-            match dir {
-                Direction::U => 1 << 0,
-                Direction::R => 1 << 1,
-                Direction::D => 1 << 2,
-                Direction::L => 1 << 3,
-            }
+        let mut visited = vec![0u8; self.map.width * self.map.height];
+        let dir_to_bit = |dir: Direction| match dir {
+            Direction::U => 1 << 0,
+            Direction::R => 1 << 1,
+            Direction::D => 1 << 2,
+            Direction::L => 1 << 3,
         };
 
         loop {
-            if visited[self.at(x, y)] & dir_to_bit(direction) > 0 {
+            if visited[self.map.at(x, y)] & dir_to_bit(direction) > 0 {
                 return true;
             }
-            visited[self.at(x, y)] |= dir_to_bit(direction);
+            visited[self.map.at(x, y)] |= dir_to_bit(direction);
 
             match direction {
                 Direction::U => {
-                    if self.data[self.at(x, y)].u as usize > y {
+                    let u = self.u(x, y);
+                    if u > y {
                         return false;
                     }
-                    y -= self.data[self.at(x, y)].u as usize;
+                    y -= u;
                     direction = Direction::R;
                 }
                 Direction::R => {
-                    if self.data[self.at(x, y)].r as usize + x >= self.width {
+                    let r = self.r(x, y);
+                    if r + x >= self.map.width {
                         return false;
                     }
-                    x += self.data[self.at(x, y)].r as usize;
+                    x += r;
                     direction = Direction::D;
                 }
                 Direction::D => {
-                    if self.data[self.at(x, y)].d as usize + y >= self.height {
+                    let d = self.d(x, y);
+                    if d + y >= self.map.height {
                         return false;
                     }
-                    y += self.data[self.at(x, y)].d as usize;
+                    y += d;
                     direction = Direction::L;
                 }
                 Direction::L => {
-                    if self.data[self.at(x, y)].l as usize > x {
+                    let l = self.l(x, y);
+                    if l > x {
                         return false;
                     }
-                    x -= self.data[self.at(x, y)].l as usize;
+                    x -= l;
                     direction = Direction::U;
                 }
             }
