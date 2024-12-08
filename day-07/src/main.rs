@@ -33,20 +33,17 @@ fn split_line(line: &str) -> (usize, Vec<usize>) {
 
 fn solvable1(total: usize, components: &[usize]) -> bool {
     for mut v in 0..(1 << (components.len() - 1)) {
-        let t = components
-            .into_iter()
-            .skip(1)
-            .try_fold(components[0], |acc, c| {
-                let acc = if v % 2 > 0 {
-                    v /= 2;
-                    acc.checked_add(*c)
-                } else {
-                    v /= 2;
-                    acc.checked_mul(*c)
-                };
+        let t = components.iter().skip(1).try_fold(components[0], |acc, c| {
+            let acc = if v % 2 > 0 {
+                v /= 2;
+                acc.checked_add(*c)
+            } else {
+                v /= 2;
+                acc.checked_mul(*c)
+            };
 
-                acc.filter(|acc| *acc <= total)
-            });
+            acc.filter(|acc| *acc <= total)
+        });
 
         if t == Some(total) {
             return true;
@@ -58,28 +55,25 @@ fn solvable1(total: usize, components: &[usize]) -> bool {
 
 fn solvable2(total: usize, components: &[usize]) -> bool {
     for mut v in 0..(3usize.pow(components.len() as u32 - 1)) {
-        let t = components
-            .into_iter()
-            .skip(1)
-            .try_fold(components[0], |acc, c| {
-                let acc = match v % 3 {
-                    0 => {
-                        v /= 3;
-                        acc.checked_add(*c)
-                    }
-                    1 => {
-                        v /= 3;
-                        acc.checked_mul(*c)
-                    }
-                    2 => {
-                        v /= 3;
-                        format!("{acc}{c}").parse::<usize>().ok()
-                    }
-                    _ => unreachable!(),
-                };
+        let t = components.iter().skip(1).try_fold(components[0], |acc, c| {
+            let acc = match v % 3 {
+                0 => {
+                    v /= 3;
+                    acc.checked_add(*c)
+                }
+                1 => {
+                    v /= 3;
+                    acc.checked_mul(*c)
+                }
+                2 => {
+                    v /= 3;
+                    format!("{acc}{c}").parse::<usize>().ok()
+                }
+                _ => unreachable!(),
+            };
 
-                acc.filter(|acc| *acc <= total)
-            });
+            acc.filter(|acc| *acc <= total)
+        });
 
         if t == Some(total) {
             return true;
