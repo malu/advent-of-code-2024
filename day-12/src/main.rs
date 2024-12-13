@@ -93,7 +93,7 @@ impl Map {
 fn perimeter(area: &BTreeSet<(usize, usize)>) -> usize {
     let contains = |x: isize, y: isize| {
         if x < 0 || y < 0 {
-            return true;
+            return false;
         }
 
         area.contains(&(x as usize, y as usize))
