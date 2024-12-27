@@ -4,9 +4,7 @@ use std::collections::BTreeSet;
 fn main() {
     let input = std::env::args().nth(1).expect("filename argument");
     let input = std::fs::read_to_string(input).expect("file exists");
-    let lines = input
-        .lines()
-        .map(|l| l.split_once('-').unwrap());
+    let lines = input.lines().map(|l| l.split_once('-').unwrap());
 
     let mut connections = BTreeMap::<&str, BTreeSet<&str>>::new();
     for (a, b) in lines {
@@ -33,14 +31,15 @@ fn main() {
         }
     }
 
-    let total1 = triplets.iter().filter(|vec| {
-        let [a, b, c] = vec.as_slice() else {
-            unreachable!();
-        };
-        a.starts_with('t') ||
-        b.starts_with('t') ||
-        c.starts_with('t')
-    }).count();
+    let total1 = triplets
+        .iter()
+        .filter(|vec| {
+            let [a, b, c] = vec.as_slice() else {
+                unreachable!();
+            };
+            a.starts_with('t') || b.starts_with('t') || c.starts_with('t')
+        })
+        .count();
 
     println!("Total (part 1): {total1}");
 
@@ -55,15 +54,17 @@ fn main() {
                 if candidate < cluster.last().unwrap() {
                     continue;
                 }
-                if cluster.iter().all(|m| connections.get(m).unwrap().contains(candidate)) {
+                if cluster
+                    .iter()
+                    .all(|m| connections.get(m).unwrap().contains(candidate))
+                {
                     let mut new = cluster.clone();
                     new.push(candidate);
                     c.insert(new);
                 }
             }
-
         }
-        
+
         clusters.push(c);
     }
 
